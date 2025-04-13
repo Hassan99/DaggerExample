@@ -1,49 +1,32 @@
 package com.invenzo.myfirstdagger2app.manual.commandshelpers
 
 import com.invenzo.myfirstdagger2app.manual.interfaces.Command
-import java.util.Arrays
+
 import javax.inject.Inject
 
-
-class CommandRouter @Inject constructor(cmd: Set<@JvmSuppressWildcards Command>) {
-
-    private val commands = HashMap<String, Command>()
-
-    init {
-        cmd.iterator().forEachRemaining { addCommand(it) }
-    }
-
-    private fun addCommand(cmd: Command) {
-        commands[cmd.key()!!] = cmd
-    }
+class CommandRouter @Inject constructor(
+    private val commands: Map<String, @JvmSuppressWildcards Command>
+) {
 
     fun route(input: String): Command.Result {
-        val splitInput = split(input)
-        if (splitInput.isEmpty()) {
-            return invalidCommand(input)
-        }
+        val splitInput = input.trim().split("\\s+".toRegex())
+        if (splitInput.isEmpty()) return invalidCommand(input)
 
         val commandKey = splitInput[0]
         val command = commands[commandKey] ?: return invalidCommand(input)
-
-        val args = splitInput.subList(1, splitInput.size)
-        val result = command.handleInput(args)
-        return if (result?.status() == Command.Status.INVALID) invalidCommand(input) else result!!
+        var args = emptyList<String>()
+        if (splitInput.size > 1) {
+          args = splitInput.drop(1)
+        }else{
+            args = splitInput
+        }
+        return command.handleInput(args)?.takeIf {
+            it.status() != Command.Status.INVALID
+        } ?: invalidCommand(input)
     }
 
     private fun invalidCommand(input: String): Command.Result {
-        println(
-            String.format("couldn't understand \"%s\". please try again.", input)
-        )
+        println("Couldn't understand \"$input\". Please try again.")
         return Command.Result.invalid()
-    }
-
-    companion object {
-        // Split on whitespace
-        private fun split(input: String): List<String> {
-            return Arrays.asList(
-                *input.trim { it <= ' ' }.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }
-                    .toTypedArray())
-        }
     }
 }
