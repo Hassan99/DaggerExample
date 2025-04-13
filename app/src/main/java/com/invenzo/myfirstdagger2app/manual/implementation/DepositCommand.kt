@@ -9,17 +9,6 @@ import javax.inject.Inject
 
 internal class DepositCommand @Inject constructor(private val outputter: Outputter) :  SingleArgCommand() {
 
-  /*  override fun key(): String? {
-        return "deposit"
-    }
-
-    override fun handleInput(input: List<String?>?): Command.Result? {
-        if (input!!.isNotEmpty()) {
-            return invalid()
-        }
-        println("Money deposited!")
-        return handled()
-    }*/
   override fun key(): String {
       return "deposit"
   }
